@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mawlid Gatherings Timetable - 1447 AH / 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c5530, #3e7b3e);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .admin-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .admin-toggle {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .admin-toggle:hover {
+            background: #c82333;
+        }
+
+        .admin-controls {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .admin-controls.active {
+            display: block;
+        }
+
+        .csv-editor {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .admin-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .admin-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+
+        .export-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .export-btn:hover {
+            background: #0056b3;
+        }
+
+        .last-updated {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #666;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .events-list {
+            padding: 0;
+        }
+
+        .event-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            transition: background-color 0.2s ease;
+        }
+
+        .event-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .event-date {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .event-time {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .event-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #2c5530;
+            margin-bottom: 4px;
+        }
+
+        .event-location {
+            color: #666;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .location-icon {
+            margin-right: 4px;
+        }
+
+        .today {
+            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+            border-left: 4px solid #ffc107;
+        }
+
+        .upcoming {
+            background: linear-gradient(45deg, #e8f5e8, #d4edda);
+            border-left: 4px solid #28a745;
+        }
+
+        .past {
+            opacity: 0.6;
+            background: #f8f9fa;
+        }
+
+        .filter-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .filter-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .filter-tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .event-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .event-date {
+                margin-bottom: 4px;
+            }
+            
+            .event-time {
+                margin-left: 0;
+            }
+
+            .admin-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mawlid Gatherings Timetable</h1>
+            <p>1447 AH | 2025</p>
+        </div>
+
+        <div class="admin-panel">
+            <button class="admin-toggle" onclick="toggleAdmin()">🔐 Admin Panel</button>
+            <div class="admin-controls" id="adminControls">
+                <h3 style="margin: 10px 0;">Edit Event Data</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                    Edit the CSV data below. Each line represents one event. Keep the header row unchanged.
+                </p>
+                <textarea class="csv-editor" id="csvEditor" placeholder="Paste your CSV data here..."></textarea>
+                <div class="success-message" id="successMessage">✅ Data updated successfully!</div>
+                <div class="error-message" id="errorMessage">❌ Error updating data. Please check the format.</div>
+                <div class="admin-buttons">
+                    <button class="save-btn" onclick="saveData()">💾 Save Changes</button>
+                    <button class="reset-btn" onclick="resetData()">🔄 Reset to Original</button>
+                    <button class="export-btn" onclick="exportData()">📥 Download CSV</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="last-updated">
+            <span>📅 Last Updated: <span id="lastUpdated"></span></span>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterEvents('all', event)">All Events</button>
+            <button class="filter-tab" onclick="filterEvents('today', event)">Today (Leo)</button>
+            <button class="filter-tab" onclick="filterEvents('upcoming', event)">Upcoming (Yanayokuja)</button>
+        </div>
+
+        <div class="events-list" id="eventsList">
+            <!-- Events will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        const defaultCSVData = `DAY,2025,1447 AH,INSTITUTION,LOCATION,TIME
+SUN,24/8/2025,29/2/1447,IRSHAD ISLAMIC CENTER,LUSHOTO - TANGA,9:00 AM
+SUN,24/8/2025,29/2/1447,MASJID MUZDALIFA,"HORO HORO,TANZANIA BORDER, S.COAST",10:00 AM
+SUN,24/8/2025,29/2/1447,AL MARHUM SHAYKH MAHMUD ESSA,"AL HUDA HALL, NAIROBI",10:15 AM
+SUN,24/8/2025,29/2/1447,MASJID SHAMSUL HUDA,JUA KALI,3:00 PM
+SUN,24/8/2025,1/3/1447,BILAL MOSQUE,"MEMON ESTATE, SOUTH C, NAIROBI",7:00 PM
+MON,25/8/2025,2/3/1447,MASJID AL HUDA (DAILY),"SOUTH B, NAIROBI",7:00 PM
+MON,25/8/2025,2/3/1447,MASJID HIDAYA (DAILY),"LEBANON, MOMBASA",7:00 PM
+MON,25/8/2025,2/3/1447,MASJID BIN ABBAS,MALINDI,8:15 PM
+MON,25/8/2025,2/3/1447,MASJID SHARIFF ALI,MOMBASA,8:15 PM
+TUES,26/8/2025,3/3/1447,MASJID SWALEH, "MAJENGO MACHURA, MOMBASA",8:00 PM
+TUES,26/8/2025,3/3/1447,MASJID ABDALLA HUSSEIN (SHELLA),MALINDI,8:15 PM
+WED,27/8/2025,4/3/1447,MAULA SAGGAF,KIZINGO MOMBASA,8:00 PM
+WED,27/8/2025,4/3/1447,AL-MARHUM SHEKHUNA / MSABAHA,MALINDI,8:15 PM
+WED,27/8/2025,4/3/1447,KUZE MAMA LULE,MOMBASA,8:00 PM
+THURS,28/8/2025,5/3/1447,JAMIA MASJID,MAMBRUI,8:15 PM
+THURS,28/8/2025,5/3/1447,MASJID MADINATUL MUNAWWARA,MALINDI,8:15 PM
+THURS,28/8/2025,5/3/1447,SYD OMAR RUDEINY,MALINDI,8:15 PM
+THURS,28/8/2025,5/3/1447,AL MARHUM SHARIF ALI MAULA KHELE,MALINDI,8:15 PM
+THURS,28/8/2025,5/3/1447,MASJID ANISA,"MJI WA KALE, MOMBASA",8:00 PM
+FRI,29/8/2025,5/3/1447,ZAINUL ABIDEEN,"KAMBU, MAKUENI",10:15 AM
+FRI,29/8/2025,5/3/1447,MASJID JAMIA,ZIWA,10:15 AM
+FRI,29/8/2025,6/3/1447,MASJID MKANYAGENI - BARAWA,OLD TOWN MOMBASA,6:20 PM
+FRI,29/8/2025,6/3/1447,AL MARHUM MWANAJAHI,MALINDI,8:15 PM
+SAT,30/8/2025,6/3/1447,KIBWEZI MASJID,"KIBWEZI, MOMBASA ROAD",10:00 AM
+SAT,30/8/2025,7/3/1447,SHAMSIYA - BONDENI,MOMBASA,8:00 PM
+SAT,30/8/2025,7/3/1447,MADRASATUL FAUZ WASSALAM,"MAKUPA, MOMBASA",8:00 PM
+SAT,30/8/2025,7/3/1447,MAJLIS SAMAI - MADRASAT NOUR,ZANZIBAR,8:15 PM
+SAT,30/8/2025,7/3/1447,AL MARHUM SHEKHUNA NA NDUGUZE,MALINDI,8:15 PM
+SUN,31/8/2025,7/3/1447,MAKINDU JAMIA MOSQUE,"MAKINDU, MOMBASA ROAD",10:00 AM
+SUN,31/8/2025,7/3/1447,MAKINA ROAD,MAKINA ROAD",10:00 AM
+SUN,31/8/2025,7/3/1447,MADRASATUR RASOOL,"DANDORA PHASE II, NAIROBI",10:15 AM
+SUN,31/8/2025,7/3/1447,MASJID JAMIA,MALABA,10:15 AM
+SUN,31/8/2025,8/3/1447,AL MARHUM MAKINANA,MALINDI,8:15 PM
+SUN,31/8/2025,8/3/1447,MASJID MUHAMMAD,"MAKUPA, ASIAN QUARTER, MOMBASA",8:00 PM
+SUN,31/8/2025,8/3/1447,MASJID TAQWA, MARKITI,"MOMBASA",8:00 PM
+MON,1/9/2025,9/3/1447,MASJID BOMANI,MALINDI,8:15 PM
+MON,1/9/2025,9/3/1447,AL MARHUM SH. ATHMAN,MALINDI,8:15 PM
+MON,1/9/2025,9/3/1447,MASJID SAIBAN,MALINDI,8:15 PM
+TUES,2/9/2025,9/3/1447,"MASJID NUR, BONDENI",MOMBASA,6:00 AM
+TUES,2/9/2025,9/3/1447,AL GHANAUL ISLAMIYYA,MAMBRUI,4:00 PM
+TUES,2/9/2025,10/3/1447,MASJID RAUDHWA,MALINDI,8:15 PM
+TUES,2/9/2025,10/3/1447,MASJID MAHURU,"OLD TOWN, MOMBASA",8:15 PM
+WED,3/9/2025,11/3/1447,HUDDA MOSQUE,"NGOMENI",8:15 PM
+WED,3/9/2025,11/3/1447,MASJID RAHMA,"MALINDI",8:15 PM
+WED,3/9/2025,11/3/1447,MASJID QUBAA,"MALINDI",8:15 PM
+WED,3/9/2025,11/3/1447,OMAR ALWY,"MALINDI",8:15 PM
+THURS,4/9/2025,11/3/1447,MASJID IMAM SHAFII,"MTWAPA",10:15 AM
+THURS,4/9/2025,11/3/1447,SAKINA MOSQUE (ZEFE),"MAKUPA, MOMBASA",4:30 PM
+THURS,4/9/2025,11/3/1447,KILIFI MOSQUE (ZEFE),"MOMBASA",4:30 PM
+THURS,4/9/2025,12/3/1447,PANGANI MOSQUE,"PANGANI, NAIROBI",7:00 PM
+THURS,4/9/2025,12/3/1447,MASJID AL-HUDA,"SOUTH B, NAIROBI",7:00 PM
+THURS,4/9/2025,12/3/1447,FAIZANE MADINA MOSQUE, OJIJO ROAD,"PARKLANDS, NAIROBI",7:00 PM
+THURS,4/9/2025,12/3/1447,MASJID NOOR, KALOLENI,"KISUMU",7:00 PM
+THURS,4/9/2025,12/3/1447,MASJID JAMII,"MALINDI",8:15 PM
+THURS,4/9/2025,12/3/1447,MASJID AL-NADHIR,"MAMBRUI",8:15 PM
+THURS,4/9/2025,12/3/1447,MAKADARA GROUNDS,"MAKADARA, MOMBASA",8:15 PM
+THURS,4/9/2025,12/3/1447,MASJID NOOR, WITU TOWN,"WITU, LAMU",8:15 PM
+THURS,4/9/2025,12/3/1447,KANZUL IMAN MASJID,"NEXT TO AL-FAROOQ HOSPITAL, MOMBASA",8:15 PM
+FRI,5/9/2025,12/3/1447,MASJID ANISA (AFTER FAJR),"MJI WA KALE, MOMBASA",6:00 AM
+FRI,5/9/2025,12/3/1447,MEMON HALL (AFTER FAJR),"SOUTH C, NAIROBI",6:00 AM
+FRI,5/9/2025,12/3/1447,MAALIM MUHAMMAD ALI (BAALI),"MAMBRUI",6:00 AM
+FRI,5/9/2025,12/3/1447,SHAYKH JUNDANI MOSQUE,"MOMBASA",4:30 PM
+FRI,5/9/2025,12/3/1447,ZEFE (EASTLEIGH),"EASTLEIGH, NAIROBI",4:30 PM
+FRI,5/9/2025,13/3/1447,MASJID SWAHABA,"12TH STREET, EASTLEIGH, NAIROBI",7:00 PM
+FRI,5/9/2025,13/3/1447,MADRASATUL MUNAA,"KIBOKONI, MOMBASA",8:15 PM
+FRI,5/9/2025,13/3/1447,MASJID JAMIA,"GARISENI",8:15 PM
+FRI,5/9/2025,13/3/1447,MAALIM JEILAN,"MALINDI",8:15 PM
+FRI,5/9/2025,13/3/1447,SYD OMAR HABSHY,"MALINDI",8:15 PM
+FRI,5/9/2025,13/3/1447,ABUBAKAR AIDARUS,"MALINDI",8:15 PM
+SAT,6/9/2025,13/3/1447,MASJID LIGHT HOUSE,"MOMBASA",10:15 AM
+SAT,6/9/2025,13/3/1447,MWINGI MOSQUE,"MWINGI",10:15 AM
+SAT,6/9/2025,13/3/1447,MADRASA ZAHRA ISLAMIA,"MAJENGO, NAIROBI",10:15 AM
+SAT,6/9/2025,13/3/1447,MASJID ONIDO,"WITO",4:00 PM
+SAT,6/9/2025,13/3/1447,ZEFE - UHURU PARK - MASJID IMTIAZALI,"NAIROBI",4:00 PM
+SAT,6/9/2025,13/3/1447,MASJID SHAYKH NUREIN,"MOMBASA",4:30 PM
+SAT,6/9/2025,14/3/1447,KONZI MOSQUE,"DIGO ROAD, MOMBASA",6:45 PM
+SAT,6/9/2025,14/3/1447,JAMIA MASJID,"MARIAKANI",8:15 PM
+SAT,6/9/2025,14/3/1447,MASJID BALUCHI,"MOMBASA",8:15 PM
+SAT,6/9/2025,14/3/1447,MASJID JAMIA - TAUWBA,"ODA",8:15 PM
+SAT,6/9/2025,14/3/1447,DIDE WARIDE,"DIDE WARIDE",8:15 PM
+SAT,6/9/2025,14/3/1447,MASJID AZHAR (GANZEL),"MALINDI",8:15 PM
+SUN,7/9/2025,14/3/1447,WESTLANDS PRIMARY SCHOOL,"NAIROBI (MOULANA SHAFI AHMED)",10:15 AM
+SUN,7/9/2025,14/3/1447,MASJID SALAM (SAADA), CALIFORNIA,"EASTLEIGH SECTION 7, NAIROBI",10:15 AM
+SUN,7/9/2025,14/3/1447,MASJID QUBA,"BUNGOMA",10:15 AM
+SUN,7/9/2025,14/3/1447,MASJID NUR,"KITUI",10:15 AM
+SUN,7/9/2025,14/3/1447,MASJID NOOR, SOUTH C,"NAIROBI",10:15 AM
+SUN,7/9/2025,14/3/1447,MADINA CENTRE,"NAIROBI",10:15 AM
+SUN,7/9/2025,14/3/1447,STADIUM MOSQUE,"STADIUM, MOMBASA",10:15 AM
+SUN,7/9/2025,14/3/1447,CARWASH,"CARWASH, KISUMU",10:15 AM
+SUN,7/9/2025,14/3/1447,MASJID TAQWA, MARKITI,"MOMBASA",4:15 PM
+SUN,7/9/2025,15/3/1447,MARKAZ AL-HADAD,"WATAMU",6:45 PM
+SUN,7/9/2025,15/3/1447,MASJID NOOR,"MALINDI",8:15 PM
+MON,8/9/2025,16/3/1447,MASJID IMAMU HABSHI (JINS),"MALINDI",8:15 PM
+MON,8/9/2025,16/3/1447,KISUMU NDOGO,"MALINDI",8:15 PM
+TUES,9/9/2025,17/3/1447,MASJID JAMIA,"MNARANI, KILIFI",8:15 PM
+TUES,9/9/2025,17/3/1447,MASJID BIN ALLY FUMO,"MALINDI",8:15 PM
+WED,10/9/2025,18/3/1447,MUHAMMAD WALADY,"MALINDI",8:15 PM
+WED,10/9/2025,18/3/1447,MASJID JAMIA,"WATAMU",8:15 PM
+WED,10/9/2025,18/3/1447,MEMON VILLA, MAREMBO,"MOMBASA",8:15 PM
+THURS,11/9/2025,19/3/1447,RIYADHA,"TAKAUNGU",8:15 PM
+THURS,11/9/2025,19/3/1447,ABDALLAH ATIK,"MALINDI",8:15 PM
+THURS,11/9/2025,19/3/1447,MLANGO WA PAPA,"MOMBASA",8:15 PM
+FRI,12/9/2025,19/3/1447,CHAGULANI,"TANGA, TANZANIA",10:00 AM
+FRI,12/9/2025,19/3/1447,KINYATU,"TANGA, TANZANIA",4:00 PM
+FRI,12/9/2025,20/3/1447,SHARIF UKWAJU,"TANGA, TANZANIA",8:15 PM
+FRI,12/9/2025,20/3/1447,AL-FAQIHUL MUQADDAM,"OLD TOWN, MOMBASA",8:15 PM
+FRI,12/9/2025,20/3/1447,MUHAMMAD HARITH,"MALINDI",8:15 PM
+SAT,13/9/2025,20/3/1447,AL-ISLAMIA MOSQUE,"LANET, NAKURU",9:15 AM
+SAT,13/9/2025,20/3/1447,MAKONGENI MASJID,"KIBRA, NAIROBI",9:30 AM
+SAT,13/9/2025,20/3/1447,MSHAMU,"MAMBRUI",10:15 AM
+SAT,13/9/2025,21/3/1447,MASJID TAQWA,"MALINDI",8:15 PM
+SUN,14/9/2025,21/3/1447,JAMIA MASJID,"NAKURU",9:15 AM
+SUN,14/9/2025,21/3/1447,MASJID JAMIA, KIBOS,"KISUMU",10:15 AM
+SUN,14/9/2025,21/3/1447,TAWHEED MUSLIM SCHOOL / ISTIQAMA,"CALIFORNIA ESTATE, EASTLEIGH, NAIROBI",10:15 AM
+SUN,14/9/2025,21/3/1447,MASJID KURAWA,"MALINDI",10:15 AM
+SUN,14/9/2025,22/3/1447,MASJID NUR, BONDENI,"MOMBASA",8:15 PM
+SUN,14/9/2025,22/3/1447,HABIB WATAMU,"MALINDI",8:15 PM
+MON,15/9/2025,23/3/1447,SALIM ABDALLAH AL-MASHJARI,"MAMBRUI",8:15 PM
+TUES,16/9/2025,24/3/1447,AL-AZHAR MOSQUE,"MAMBRUI",8:15 PM
+TUES,16/9/2025,24/3/1447,MKAAMOTO,"MALINDI",8:15 PM
+THURS,18/9/2025,25/3/1447,MASJID MAALAM SHARIF SAID,"MAMBRUI",10:15 AM
+THURS,18/9/2025,26/3/1447,RIYADHA MOSQUE,"LAMU",8:15 PM
+THURS,18/9/2025,26/3/1447,RIYADHA MOSQUE,"MAMBRUI",8:15 PM
+THURS,18/9/2025,26/3/1447,MBARUK MOSQUE,"MAKADARA, MOMBASA",8:15 PM
+THURS,18/9/2025,26/3/1447,SHAYKH JUNDANI MOSQUE,"MOMBASA",8:15 PM
+FRI,19/9/2025,27/3/1447,MZEE HASHIM,"MAMBRUI",8:15 PM
+FRI,19/9/2025,27/3/1447,AZHAR (MAWENI),"MALINDI",8:15 PM
+SAT,20/9/2025,27/3/1447,BONDENI MOSQUE,"NAKURU",9:15 AM
+SAT,20/9/2025,27/3/1447,MASJID OMAR BIN KHATAB,"KIJIWE, TANGA, MALINDI",10:00 AM
+SAT,20/9/2025,27/3/1447,MASJID MUDHIHIRI (CHELSEA),"PUMWANI, NAIROBI",10:15 AM
+SAT,20/9/2025,28/3/1447,GAZA RIYADHA,"MALINDI",8:15 PM
+SAT,20/9/2025,28/3/1447,BAJABER,"MAMBRUI",8:00 PM
+SAT,20/9/2025,28/3/1447,BWANA ALLY,"MALINDI",8:15 PM
+SUN,21/9/2025,28/3/1447,NASHER'S HOME,"NAKURU",9:15 AM
+SUN,21/9/2025,28/3/1447,MACKINNON RD MOSQUE (ZEFE),"MOMBASA ROAD",9:15 AM
+SUN,21/9/2025,28/3/1447,MACKINNON ROAD MOSQUE,"MOMBASA ROAD",10:15 AM
+SUN,21/9/2025,28/3/1447,MASJID JAMIA,"BULBUL TOWN, NGONG, NAIROBI",10:15 AM
+SUN,21/9/2025,28/3/1447,MASJID KHALIFA (SHEIKH AKIDA),"MUMIAS",10:15 AM
+SUN,21/9/2025,28/3/1447,ZEFE,"MALINDI",4:00 PM
+SUN,21/9/2025,29/3/1447,RIYADHA MOSQUE,"MALINDI",8:15 PM
+MON,22/9/2025,30/3/1447,MASJID IHSAN,"MALINDI",8:15 PM
+TUES,23/9/2025,30/3/1447,AL-BIIDH - LUKORE,"KWALE",10:15 AM
+TUES,23/9/2025,1/4/1447,KIBUYUNI MOSQUE,"KWALE",8:15 PM
+WED,24/9/2025,1/4/1447,ESHU MOSQUE,"KWALE",10:15 AM
+WED,24/9/2025,2/4/1447,MAULID YA USTADH SUFI,"MALINDI",8:15 PM
+THURS,25/9/2025,3/4/1447,COMPLEX,"MALINDI",8:15 PM
+FRI,26/9/2025,4/4/1447,MEMON RESIDENCY - HOMBE ROAD,"NAIROBI",7:00 PM
+SAT,27/9/2025,4/4/1447,MAKARIMUL-A MADRASA,"NAKURU",10:15 AM
+SAT,27/9/2025,5/4/1447,MASJID SWABUR,"MWANDONI, MOMBASA",8:15 PM
+SUN,28/9/2025,5/4/1447,MANAZILUL ABRAR/SAADA,"MASJID SALAM, EASTLEIGH",8:30 AM
+SUN,28/9/2025,5/4/1447,NJORO MOSQUE,"NJORO",10:15 AM
+SUN,28/9/2025,5/4/1447,FARASINI FARM,"AMKENI (BARAKA TRUST)",10:15 AM
+SUN,28/9/2025,5/4/1447,MASJID RIDHWAN, DANDORA PHASE 2,"NAIROBI",10:15 AM
+SUN,28/9/2025,5/4/1447,MAWLID ELDORET,"ELDORET",10:15 AM
+SUN,28/9/2025,5/4/1447,MASJID NAIROBI WEST,"NAIROBI",10:15 AM
+SUN,28/9/2025,5/4/1447,MASJID NOOR, MKENDWA,"KISUMU",10:15 AM
+SUN,28/9/2025,5/4/1447,MASJID NOOR,"RIRUTA, NAIROBI",10:15 AM
+SUN,28/9/2025,6/4/1447,BARANI,"MALINDI",8:15 PM
+SUN,28/9/2025,6/4/1447,MADRASATUL ABASHEIKH,"MALINDI",8:15 PM
+SUN,28/9/2025,6/4/1447,MASJID OMAR KHATWAB,"MALINDI",8:15 PM
+SUN,28/9/2025,6/4/1447,MASJID MUFLIHINA,"MOMBASA",8:15 PM
+TUES,30/9/2025,8/4/1447,MASJID RIYADH,"MWANZA",8:15 PM
+SAT,4/10/2025,11/4/1447,MASJID AHLU SUNNAH WAL JAMAA,"RAILWAY, SHIMANZI",10:15 AM
+SAT,4/10/2025,11/4/1447,MASJID SHAMSIL HUDAA,"BAMBURI, MOMBASA",10:15 AM
+SAT,4/10/2025,11/4/1447,MASJID MARWA,"BLUE BENCH, MOMBASA",4:30 PM
+SAT,4/10/2025,12/4/1447,SHARIF HEMED,"MAMBRUI",8:15 PM
+SAT,4/10/2025,12/4/1447,AL-MARHUMA KHADIJA HABSHY,"MJI WA KALE, MOMBASA",8:15 PM
+SAT,4/10/2025,12/4/1447,MASJID KAMAL,"VOI",8:15 PM
+SUN,5/10/2025,12/4/1447,MASJID IMTIAZ ALI,"NAIROBI",10:15 AM
+SUN,5/10/2025,11/4/1447,GATHANGA MOSQUE, BANANA,"RUAKA, NAIROBI",10:15 AM
+SUN,5/10/2025,11/4/1447,MASJID ZULFA,"MOMBASA",10:15 AM
+SUN,5/10/2025,12/4/1447,BIAFRA MOSQUE,"BIAFRA, NAIROBI",10:15 AM
+SUN,5/10/2025,12/4/1447,MASJID NOOR - MUHORONI,"KISUMU",10:15 AM
+SUN,5/10/2025,13/4/1447,MARAJAL BAHRAIN,"MOMBASA",8:15 PM
+SUN,5/10/2025,13/4/1447,MASJID QADIRIYYA,"KONGOWEA",8:15 PM
+SUN,5/10/2025,13/4/1447,RAILWAY STATION,"VOI",8:15 PM
+SUN,5/10/2025,13/4/1447,SAID AL-AGHAR,"MTONGWE-LIKONI",8:15 PM
+MON,6/10/2025,14/4/1447,JAMIA MASJID,"KINONDO, KWALE",8:15 PM
+TUES,7/10/2025,14/4/1447,JAMIA MASJID,"WASIN, KWALE",10:15 AM
+TUES,7/10/2025,15/4/1447,JAMIA MASJID,"ESHU, KWALE",8:15 PM
+WED,8/10/2025,16/4/1447,JAMIA MASJID,"MWAMBURE, KWALE",8:15 PM
+WED,8/10/2025,16/4/1447,MASJID AMANI,"BARSHEBA, MOMBASA",8:15 PM
+SUN,12/10/2025,19/4/1447,MASJID ANWAR,"KAREN, NAIROBI",10:15 AM
+SUN,12/10/2025,19/4/1447,UMMU LEILAH MADRASA,"NAKURU",10:15 AM
+SUN,12/10/2025,19/4/1447,MASJID NUR, KASONGO,"NYANGORI, KISUMU",10:15 AM
+SUN,12/10/2025,19/4/1447,MADRASATUL HUDAA,"ELDORET",10:15 AM
+THURS,16/10/2025,24/4/1447,SHAYKH MAHMOUD ANNAUFALLY,"MOMBASA",8:15 PM
+SAT,18/10/2025,25/4/1447,SHABAB MASJID,"NAKURU",10:15 AM
+SAT,18/10/2025,26/4/1447,MAASJID TAQWA, MAALIM ABDALLAH,"KIPINI",8:15 PM
+SAT,18/10/2025,26/4/1447,MADRASATUL KHAIRAAT,"MOMBASA",8:15 PM
+SUN,19/10/2025,25/4/1447,MADRASATUL HABIIB BARAKAT,"SHEIKH NAAZIM ZAAWIYA, MAKINDU",10:15 AM
+SUN,19/10/2025,25/4/1447,BUSIA SUGAR COMPANY,"BUSIA",10:15 AM
+SUN,19/10/2025,25/4/1447,MADRASA JANATUL NAIM,"MANYATA ARAB, KISUMU",10:15 AM
+SUN,19/10/2025,26/4/1447,SWALIHINA,"MOMBASA",8:15 PM
+SAT,25/10/2025,3/5/1447,NASHER NAAMAN MOSQUE,"KIKOPEY, GILGIL",10:15 AM
+SAT,25/10/2025,3/5/1447,SHEIKH BEKA AL-AMOUDY,"MOMBASA",10:15 AM
+SUN,26/10/2025,4/5/1447,MAWLID YA IMAM ALI HABSHI,"NAIROBI",10:15 AM
+SUN,26/10/2025,4/5/1447,MARKAZ AHDALY, MAKADARA HARAMBEE,"MUMIAS",10:15 AM
+SUN,26/10/2025,4/5/1447,AISHA MOSQUE,"BELBAR, SALGAA",10:15 AM
+SAT,1/11/2025,10/5/1447,DABASU,"WATAMU",10:15 AM
+SAT,1/11/2025,11/5/1447,DHIKR,"WATAMU",8:15 PM
+SAT,1/11/2025,10/5/1447,RHONDA (B) MASJID,"NAKURU",10:15 AM
+SAT,1/11/2025,10/5/1447,MAWLID YA WANAWAKE - KALOLENI,"KISUMU",10:15 AM
+SAT,1/11/2025,11/5/1447,IHDA SHARIA - KALOLENI,"KISUMU",7:00 PM
+SUN,2/11/2025,11/5/1447,DUA YA MTAA & MAULID - KALOLENI,"KISUMU",8:15 AM
+SUN,2/11/2025,11/5/1447,MASJID JAMIA,"SALGAA",10:15 AM
+SAT,8/11/2025,17/5/1447,MAULIDI YA SYED ALI HUSSEIN BADAWI,"BIAFRA, NAIROBI",10:15 AM
+SAT,8/11/2025,17/5/1447,RONGAI MASJID,"RONGAI",10:15 AM
+SAT,8/11/2025,18/5/1447,MADRASATUL-TAISIR,"PANGANI SHOPPING CENTRE, NAIROBI",6:00 PM
+SAT,8/11/2025,18/5/1447,BILAL CENTRE MOSQUE,"NAKURU",7:00 PM
+SUN,9/11/2025,18/5/1447,MAJMA-UL-AHBAAB,"MEMON HALL, SOUTH C",10:15 AM
+SUN,9/11/2025,18/5/1447,AMIRUL MUUMINIIN MOSQUE,"LAKEVIEW, NAKURU",10:15 AM
+SUN,9/11/2025,18/5/1447,MAMA FATUMA'S CHILDREN'S HOME,"EASTLEIGH SECTION 1, NAIROBI",3:30 PM
+SAT,15/11/2025,24/5/1447,MAJANI MINGI,"MOGOTIO, NAKURU",10:15 AM
+SAT,15/11/2025,25/5/1447,MASJID MIHRAB,"MOMBASA",8:15 PM
+SAT,15/11/2025,24/5/1447,MADRASA SHEIKH LUQMAN AL-ISLAMIYA,"KAJIADO",10:15 AM
+SUN,16/11/2025,25/5/1447,MAAHAD KISAUNI,"MOMBASA",10:15 AM
+SUN,16/11/2025,25/5/1447,JAMIA MOSQUE,"WEBUYE",10:15 AM
+SUN,16/11/2025,25/5/1447,MASJID QUBAA, KAYABA,"NAIROBI",10:15 AM
+SAT,22/11/2025,1/6/1447,SHARIF HASSAN MOSQUE,"PYRETHRUM BONDENI",10:15 AM
+SAT,22/11/2025,1/6/1447,BONDENI MOSQUE,"GILGIL",10:15 AM
+SAT,22/11/2025,1/6/1447,MANAZILUL ABRAR,"MAMBRUI",4:00 PM
+SUN,23/11/2025,2/6/1447,NYS,"GILGIL",10:15 AM
+SUN,23/11/2025,2/6/1447,MASJID MARYAM, GITHURAI 45,"NAIROBI",10:15 AM
+SUN,23/11/2025,2/6/1447,HAULI YA SAYYID UMAR AHMED AHDALY,"SHAURI MOYO, KISUMU",10:15 AM
+SAT,29/11/2025,8/6/1447,HUSSAINIYA MOSQUE,"NAKURU",10:15 AM
+SUN,30/11/2025,9/6/1447,MAULID - WOMEN GROUP OF BUNGOMA,"BUNGOMA",10:15 AM
+SUN,30/11/2025,9/6/1447,UNIVERSITY OF NAIROBI, MAMLAKA B,"MAMLAKA ROAD, NAIROBI",10:15 AM
+SAT,13/12/2025,22/6/1447,HAULI SAYYID HASSAN ABDALLA AHDALY,"NAKURU",10:15 AM
+SUN,14/12/2025,23/6/1447,HAULI SAYYID OMAR ABDALLA AHDALY,"KISUMU - KALOLENI",9:00 AM
+SUN,14/12/2025,23/6/1447,MASJID RAHMA,"KANAGONI, LAMU ROAD",10:15 AM
+SAT,20/12/2025,29/6/1447,MADINATU MUNAWAR - NUBIAN,"MUMIAS",10:15 AM
+SUN,21/12/2025,30/6/1447,ALGHANNAUL ISLAMIYA,"MEMON HALL, SOUTH C",10:15 AM
+SUN,21/12/2025,30/6/1447,GRAND IHDA SHERIA - MEMON HALL,"MEMON HALL, SOUTH C",10:15 AM
+SUN,21/12/2025,30/6/1447,MASJID TAQWA - MJINI,"MUMIAS",10:15 AM
+SUN,28/12/2025,7/7/1447,FAUZ WASALAM,"ARUA, UGANDA",10:15 AM
+SAT,10/01/2026,21/7/1447,TANGA,"TANZANIA",8:15 PM
+SUN,11/01/2026,22/7/1447,TANGA,"TANZANIA",8:15 PM
+SUN,24/01/2026,5/8/1447,KURAWA,"LAMU ROAD",10:15 AM
+SUN,08/02/2026,20/8/1447,TAWASUL - SHARIF AL-MAARUF,"NAKURU",10:15 AM
+TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
+
+        let events = [];
+        let currentFilter = 'all';
+
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            
+            return lines.slice(1).map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+                
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header.trim()] = values[index] || '';
+                });
+                return obj;
+            });
+        }
+
+        function parseDate(dateStr) {
+            const [day, month, year] = dateStr.split('/');
+            return new Date(year, month - 1, day);
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short'
+            });
+        }
+
+        function formatHijriDate(hijriStr) {
+            const parts = hijriStr.split('/');
+            if (parts.length === 3) {
+                const day = parts[0];
+                const month = parts[1];
+                
+                const hijriMonths = [
+                    '', 'Muharram', 'Safar', 'Rabi\' al-Awwal', 'Rabi\' al-Thani',
+                    'Jumada al-Awwal', 'Jumada al-Thani', 'Rajab', 'Sha\'ban',
+                    'Ramadan', 'Shawwal', 'Dhu al-Qi\'dah', 'Dhu al-Hijjah'
+                ];
+                
+                const monthName = hijriMonths[parseInt(month)] || month;
+                return `${day} ${monthName}`;
+            }
+            return hijriStr;
+        }
+
+        function getEventStatus(eventDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const eventDateOnly = new Date(eventDate);
+            eventDateOnly.setHours(0, 0, 0, 0);
+            
+            if (eventDateOnly.getTime() === today.getTime()) {
+                return 'today';
+            } else if (eventDateOnly > today) {
+                return 'upcoming';
+            } else {
+                return 'past';
+            }
+        }
+
+        function renderEvents(filteredEvents) {
+            const eventsList = document.getElementById('eventsList');
+            
+            if (filteredEvents.length === 0) {
+                eventsList.innerHTML = '<div class="no-events">No events found for the selected filter.</div>';
+                return;
+            }
+            
+            eventsList.innerHTML = filteredEvents.map(event => {
+                const eventDate = parseDate(event['2025']);
+                const status = getEventStatus(eventDate);
+                
+                return `
+                    <div class="event-item ${status}">
+                        <div class="event-header">
+                            <div>
+                                <span class="event-date">${formatDate(eventDate)}</span>
+                                <span class="event-time">${event.TIME}</span>
+                            </div>
+                        </div>
+                        <div class="event-title">${event.INSTITUTION}</div>
+                        <div class="hijri-date" style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">
+                            🌙 ${formatHijriDate(event['1447 AH'])}
+                        </div>
+                        <div class="event-location">
+                            <span class="location-icon">📍</span>
+                            ${event.LOCATION.replace(/"/g, '')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterEvents(filter, event) {
+            currentFilter = filter;
+            
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filteredEvents = events;
+            
+            if (filter === 'today') {
+                filteredEvents = events.filter(event => {
+                    const eventDate = parseDate(event['2025']);
+                    return getEventStatus(eventDate) === 'today';
+                });
+            } else if (filter === 'upcoming') {
+                filteredEvents = events.filter(event => {
+                    const eventDate = parseDate(event['2025']);
+                    const status = getEventStatus(eventDate);
+                    return status === 'upcoming' || status === 'today';
+                });
+            }
+            
+            renderEvents(filteredEvents);
+        }
+
+        function toggleAdmin() {
+            const adminControls = document.getElementById('adminControls');
+            const csvEditor = document.getElementById('csvEditor');
+            
+            if (adminControls.classList.contains('active')) {
+                adminControls.classList.remove('active');
+            } else {
+                adminControls.classList.add('active');
+                // Load current data into editor
+                const currentData = getCurrentCSVData();
+                csvEditor.value = currentData;
+            }
+        }
+
+        function getCurrentCSVData() {
+            if (events.length === 0) return defaultCSVData;
+            
+            const headers = ['DAY', '2025', '1447 AH', 'INSTITUTION', 'LOCATION', 'TIME'];
+            let csvContent = headers.join(',') + '\n';
+            
+            events.forEach(event => {
+                const row = headers.map(header => {
+                    let value = event[header] || '';
+                    // Add quotes if value contains comma
+                    if (value.includes(',')) {
+                        value = `"${value}"`;
+                    }
+                    return value;
+                }).join(',');
+                csvContent += row + '\n';
+            });
+            
+            return csvContent;
+        }
+
+        function saveData() {
+            const csvEditor = document.getElementById('csvEditor');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            try {
+                const newEvents = parseCSV(csvEditor.value);
+                
+                // Validate data
+                if (newEvents.length === 0) {
+                    throw new Error('No events found');
+                }
+                
+                // Check if required columns exist
+                const requiredColumns = ['2025', 'INSTITUTION', 'LOCATION', 'TIME'];
+                const firstEvent = newEvents[0];
+                for (let col of requiredColumns) {
+                    if (!(col in firstEvent)) {
+                        throw new Error(`Missing required column: ${col}`);
+                    }
+                }
+                
+                // Update events
+                events = newEvents;
+                
+                // Sort events by date
+                events.sort((a, b) => {
+                    const dateA = parseDate(a['2025']);
+                    const dateB = parseDate(b['2025']);
+                    return dateA - dateB;
+                });
+                
+                // Update display
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+                renderEvents(events);
+                
+                // Show success message
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+                
+            } catch (error) {
+                errorMessage.textContent = '❌ Error: ' + error.message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function resetData() {
+            const csvEditor = document.getElementById('csvEditor');
+            csvEditor.value = defaultCSVData;
+            
+            // Reset to original data
+            events = parseCSV(defaultCSVData);
+            events.sort((a, b) => {
+                const dateA = parseDate(a['2025']);
+                const dateB = parseDate(b['2025']);
+                return dateA - dateB;
+            });
+            
+            renderEvents(events);
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        }
+
+        function exportData() {
+            const csvData = getCurrentCSVData();
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mawlid-timetable-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function init() {
+            events = parseCSV(defaultCSVData);
+            
+            // Sort events by date
+            events.sort((a, b) => {
+                const dateA = parseDate(a['2025']);
+                const dateB = parseDate(b['2025']);
+                return dateA - dateB;
+            });
+            
+            // Set last updated time
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+            
+            // Render all events initially
+            renderEvents(events);
+        }
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+<footer style="text-align: center; padding: 20px; background-color: #f9f9f9;">
+  <p>
+    Note: To book a slot in next year's time-table, institution authorities are requested to contact 
+    the compilers not less than three weeks before 1st Rabbi-ul-Awwal, failing which the name of the 
+    institution will not appear in the time-table. Although every effort has been made to ensure 
+    accuracy of the above information, you are requested to reconfirm the dates with the respective 
+    institution for any changes that may have taken place subsequent to going to the press.
+  </p>
+  <p>
+    <strong>Contact:</strong> <a href="#">0717394679</a> / 
+    <strong>Email:</strong> <a href="mailto:biles786@gmail.com">biles786@gmail.com</a>
+  </p>
+  <p>
+    Contact Majma TV to book for your Live Mawlid coverage on television at affordable rate 
+    on <strong><a href="#">0721397163</a></strong>
+  </p>
+</footer>
+</html>
