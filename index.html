@@ -46,86 +46,6 @@
             opacity: 0.9;
         }
 
-        .admin-panel {
-            background: #f8f9fa;
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .admin-toggle {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .admin-toggle:hover {
-            background: #c82333;
-        }
-
-        .admin-controls {
-            display: none;
-            margin-top: 15px;
-        }
-
-        .admin-controls.active {
-            display: block;
-        }
-
-        .csv-editor {
-            width: 100%;
-            height: 200px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-
-        .admin-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .admin-buttons button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .save-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .save-btn:hover {
-            background: #218838;
-        }
-
-        .reset-btn {
-            background: #6c757d;
-            color: white;
-        }
-
-        .reset-btn:hover {
-            background: #5a6268;
-        }
-
-        .export-btn {
-            background: #007bff;
-            color: white;
-        }
-
-        .export-btn:hover {
-            background: #0056b3;
-        }
-
         .last-updated {
             background: #f8f9fa;
             padding: 12px 20px;
@@ -245,24 +165,6 @@
             color: #666;
         }
 
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            display: none;
-        }
-
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 1.3rem;
@@ -280,10 +182,6 @@
             .event-time {
                 margin-left: 0;
             }
-
-            .admin-buttons {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
@@ -293,33 +191,15 @@
             <h1>Mawlid Gatherings Timetable</h1>
             <p>1447 AH | 2025</p>
         </div>
-
-        <div class="admin-panel" id="adminPanel" style="display: none;">
-            <button class="admin-toggle" onclick="toggleAdmin()">🔐 Admin Panel</button>
-            <div class="admin-controls" id="adminControls">
-                <h3 style="margin: 10px 0;">Edit Event Data</h3>
-                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
-                    Edit the CSV data below. Each line represents one event. Keep the header row unchanged.
-                </p>
-                <textarea class="csv-editor" id="csvEditor" placeholder="Paste your CSV data here..."></textarea>
-                <div class="success-message" id="successMessage">✅ Data updated successfully!</div>
-                <div class="error-message" id="errorMessage">❌ Error updating data. Please check the format.</div>
-                <div class="admin-buttons">
-                    <button class="save-btn" onclick="saveData()">💾 Save Changes</button>
-                    <button class="reset-btn" onclick="resetData()">🔄 Reset to Original</button>
-                    <button class="export-btn" onclick="exportData()">📥 Download CSV</button>
-                </div>
-            </div>
-        </div>
         
         <div class="last-updated">
             <span>📅 Last Updated: <span id="lastUpdated"></span></span>
         </div>
 
         <div class="filter-tabs">
-            <button class="filter-tab active" onclick="filterEvents('all', event)">All Events</button>
-            <button class="filter-tab" onclick="filterEvents('today', event)">Today (Leo)</button>
-            <button class="filter-tab" onclick="filterEvents('upcoming', event)">Upcoming (Yanayokuja)</button>
+            <button class="filter-tab active" onclick="filterEvents('all')">All Events</button>
+            <button class="filter-tab" onclick="filterEvents('today')">Today (Leo)</button>
+            <button class="filter-tab" onclick="filterEvents('upcoming')">Upcoming (Yanayokuja)</button>
         </div>
 
         <div class="events-list" id="eventsList">
@@ -328,7 +208,7 @@
     </div>
 
     <script>
-        const defaultCSVData = `DAY,2025,1447 AH,INSTITUTION,LOCATION,TIME
+        const csvData = `DAY,2025,1447 AH,INSTITUTION,LOCATION,TIME
 SUN,24/8/2025,29/2/1447,IRSHAD ISLAMIC CENTER,LUSHOTO - TANGA,9:00 AM
 SUN,24/8/2025,29/2/1447,MASJID MUZDALIFA,"HORO HORO,TANZANIA BORDER, S.COAST",10:00 AM
 SUN,24/8/2025,29/2/1447,AL MARHUM SHAYKH MAHMUD ESSA,"AL HUDA HALL, NAIROBI",10:15 AM
@@ -574,40 +454,6 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
         let events = [];
         let currentFilter = 'all';
 
-        // Password protection for admin access
-        const ADMIN_PASSWORD = "mawlid2025"; // Change this to your desired password
-
-        function checkAdminAccess() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const adminParam = urlParams.get('admin');
-            
-            // Check if admin parameter exists in URL
-            if (adminParam === ADMIN_PASSWORD) {
-                document.getElementById('adminPanel').style.display = 'block';
-                return true;
-            }
-            
-            // Alternative: Check for stored admin session
-            if (sessionStorage.getItem('adminAccess') === 'granted') {
-                document.getElementById('adminPanel').style.display = 'block';
-                return true;
-            }
-            
-            return false;
-        }
-
-        function showAdminLogin() {
-            const password = prompt("Enter admin password to access editing features:");
-            if (password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('adminAccess', 'granted');
-                document.getElementById('adminPanel').style.display = 'block';
-                return true;
-            } else if (password !== null) {
-                alert("Incorrect password. Access denied.");
-            }
-            return false;
-        }
-
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
             const headers = lines[0].split(',');
@@ -652,13 +498,15 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
         }
 
         function formatHijriDate(hijriStr) {
+            // Parse the Hijri date and format with month name
             const parts = hijriStr.split('/');
             if (parts.length === 3) {
                 const day = parts[0];
                 const month = parts[1];
                 
                 const hijriMonths = [
-                    '', 'Muharram', 'Safar', 'Rabi\' al-Awwal', 'Rabi\' al-Thani',
+                    '', // Index 0 unused
+                    'Muharram', 'Safar', 'Rabi\' al-Awwal', 'Rabi\' al-Thani',
                     'Jumada al-Awwal', 'Jumada al-Thani', 'Rajab', 'Sha\'ban',
                     'Ramadan', 'Shawwal', 'Dhu al-Qi\'dah', 'Dhu al-Hijjah'
                 ];
@@ -718,9 +566,10 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
             }).join('');
         }
 
-        function filterEvents(filter, event) {
+        function filterEvents(filter) {
             currentFilter = filter;
             
+            // Update active tab
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -744,128 +593,8 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
             renderEvents(filteredEvents);
         }
 
-        function toggleAdmin() {
-            const adminControls = document.getElementById('adminControls');
-            const csvEditor = document.getElementById('csvEditor');
-            
-            if (adminControls.classList.contains('active')) {
-                adminControls.classList.remove('active');
-            } else {
-                adminControls.classList.add('active');
-                // Load current data into editor
-                const currentData = getCurrentCSVData();
-                csvEditor.value = currentData;
-            }
-        }
-
-        function getCurrentCSVData() {
-            if (events.length === 0) return defaultCSVData;
-            
-            const headers = ['DAY', '2025', '1447 AH', 'INSTITUTION', 'LOCATION', 'TIME'];
-            let csvContent = headers.join(',') + '\n';
-            
-            events.forEach(event => {
-                const row = headers.map(header => {
-                    let value = event[header] || '';
-                    // Add quotes if value contains comma
-                    if (value.includes(',')) {
-                        value = `"${value}"`;
-                    }
-                    return value;
-                }).join(',');
-                csvContent += row + '\n';
-            });
-            
-            return csvContent;
-        }
-
-        function saveData() {
-            const csvEditor = document.getElementById('csvEditor');
-            const successMessage = document.getElementById('successMessage');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            try {
-                const newEvents = parseCSV(csvEditor.value);
-                
-                // Validate data
-                if (newEvents.length === 0) {
-                    throw new Error('No events found');
-                }
-                
-                // Check if required columns exist
-                const requiredColumns = ['2025', 'INSTITUTION', 'LOCATION', 'TIME'];
-                const firstEvent = newEvents[0];
-                for (let col of requiredColumns) {
-                    if (!(col in firstEvent)) {
-                        throw new Error(`Missing required column: ${col}`);
-                    }
-                }
-                
-                // Update events
-                events = newEvents;
-                
-                // Sort events by date
-                events.sort((a, b) => {
-                    const dateA = parseDate(a['2025']);
-                    const dateB = parseDate(b['2025']);
-                    return dateA - dateB;
-                });
-                
-                // Update display
-                document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
-                renderEvents(events);
-                
-                // Show success message
-                successMessage.style.display = 'block';
-                errorMessage.style.display = 'none';
-                
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 3000);
-                
-            } catch (error) {
-                errorMessage.textContent = '❌ Error: ' + error.message;
-                errorMessage.style.display = 'block';
-                successMessage.style.display = 'none';
-                
-                setTimeout(() => {
-                    errorMessage.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        function resetData() {
-            const csvEditor = document.getElementById('csvEditor');
-            csvEditor.value = defaultCSVData;
-            
-            // Reset to original data
-            events = parseCSV(defaultCSVData);
-            events.sort((a, b) => {
-                const dateA = parseDate(a['2025']);
-                const dateB = parseDate(b['2025']);
-                return dateA - dateB;
-            });
-            
-            renderEvents(events);
-            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
-        }
-
-        function exportData() {
-            const csvData = getCurrentCSVData();
-            const blob = new Blob([csvData], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `mawlid-timetable-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
-
         function init() {
-            events = parseCSV(defaultCSVData);
+            events = parseCSV(csvData);
             
             // Sort events by date
             events.sort((a, b) => {
@@ -877,22 +606,9 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
             // Set last updated time
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
             
-            // Check for admin access
-            checkAdminAccess();
-            
             // Render all events initially
             renderEvents(events);
         }
-
-        // Add keyboard shortcut for admin access (Ctrl+Shift+A)
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                if (!checkAdminAccess()) {
-                    showAdminLogin();
-                }
-            }
-        });
 
         // Initialize the app
         init();
@@ -912,7 +628,7 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
   </p>
   <p>
     Contact Majma TV to book for your Live Mawlid coverage on television at affordable rate 
-    on <strong><a href="#">0721397163</a></strong>
+    on </strong> <a href="#">0721397163</a>
   </p>
 </footer>
 </html>
