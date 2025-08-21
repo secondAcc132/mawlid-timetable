@@ -294,7 +294,7 @@
             <p>1447 AH | 2025</p>
         </div>
 
-        <div class="admin-panel">
+        <div class="admin-panel" id="adminPanel" style="display: none;">
             <button class="admin-toggle" onclick="toggleAdmin()">🔐 Admin Panel</button>
             <div class="admin-controls" id="adminControls">
                 <h3 style="margin: 10px 0;">Edit Event Data</h3>
@@ -574,6 +574,40 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
         let events = [];
         let currentFilter = 'all';
 
+        // Password protection for admin access
+        const ADMIN_PASSWORD = "mawlid2025"; // Change this to your desired password
+
+        function checkAdminAccess() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const adminParam = urlParams.get('admin');
+            
+            // Check if admin parameter exists in URL
+            if (adminParam === ADMIN_PASSWORD) {
+                document.getElementById('adminPanel').style.display = 'block';
+                return true;
+            }
+            
+            // Alternative: Check for stored admin session
+            if (sessionStorage.getItem('adminAccess') === 'granted') {
+                document.getElementById('adminPanel').style.display = 'block';
+                return true;
+            }
+            
+            return false;
+        }
+
+        function showAdminLogin() {
+            const password = prompt("Enter admin password to access editing features:");
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminAccess', 'granted');
+                document.getElementById('adminPanel').style.display = 'block';
+                return true;
+            } else if (password !== null) {
+                alert("Incorrect password. Access denied.");
+            }
+            return false;
+        }
+
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
             const headers = lines[0].split(',');
@@ -843,9 +877,22 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
             // Set last updated time
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
             
+            // Check for admin access
+            checkAdminAccess();
+            
             // Render all events initially
             renderEvents(events);
         }
+
+        // Add keyboard shortcut for admin access (Ctrl+Shift+A)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                if (!checkAdminAccess()) {
+                    showAdminLogin();
+                }
+            }
+        });
 
         // Initialize the app
         init();
