@@ -158,6 +158,20 @@
         .filter-tab:hover:not(.active) {
             background: #e9ecef;
         }
+        
+        .search-container {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
 
         .no-events {
             text-align: center;
@@ -197,14 +211,17 @@
         </div>
 
         <div class="filter-tabs">
-            <button class="filter-tab active" onclick="filterEvents('all')">All Events</button>
-            <button class="filter-tab" onclick="filterEvents('today')">Today (Leo)</button>
-            <button class="filter-tab" onclick="filterEvents('upcoming')">Upcoming (Yanayokuja)</button>
+            <button class="filter-tab active" onclick="filterEvents('all', this)">All Events</button>
+            <button class="filter-tab" onclick="filterEvents('today', this)">Today (Leo)</button>
+            <button class="filter-tab" onclick="filterEvents('upcoming', this)">Upcoming (Yanayokuja)</button>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" onkeyup="updateDisplay()" placeholder="🔎 Search by institution or location...">
         </div>
 
         <div class="events-list" id="eventsList">
-            <!-- Events will be loaded here -->
-        </div>
+            </div>
     </div>
 
     <script>
@@ -498,7 +515,6 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
         }
 
         function formatHijriDate(hijriStr) {
-            // Parse the Hijri date and format with month name
             const parts = hijriStr.split('/');
             if (parts.length === 3) {
                 const day = parts[0];
@@ -565,32 +581,44 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
                 `;
             }).join('');
         }
-
-        function filterEvents(filter) {
-            currentFilter = filter;
-            
-            // Update active tab
-            document.querySelectorAll('.filter-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
+        
+        function updateDisplay() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             let filteredEvents = events;
-            
-            if (filter === 'today') {
+
+            // First, filter by the active tab
+            if (currentFilter === 'today') {
+                filteredEvents = events.filter(event => getEventStatus(parseDate(event['2025'])) === 'today');
+            } else if (currentFilter === 'upcoming') {
                 filteredEvents = events.filter(event => {
-                    const eventDate = parseDate(event['2025']);
-                    return getEventStatus(eventDate) === 'today';
-                });
-            } else if (filter === 'upcoming') {
-                filteredEvents = events.filter(event => {
-                    const eventDate = parseDate(event['2025']);
-                    const status = getEventStatus(eventDate);
+                    const status = getEventStatus(parseDate(event['2025']));
                     return status === 'upcoming' || status === 'today';
                 });
             }
-            
+
+            // Then, filter by the search term
+            if (searchTerm) {
+                filteredEvents = filteredEvents.filter(event => {
+                    const institution = event.INSTITUTION.toLowerCase();
+                    const location = event.LOCATION.toLowerCase();
+                    return institution.includes(searchTerm) || location.includes(searchTerm);
+                });
+            }
+
             renderEvents(filteredEvents);
+        }
+
+        function filterEvents(filter, element) {
+            currentFilter = filter;
+            
+            // Update active tab style
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            // Trigger a display update
+            updateDisplay();
         }
 
         function init() {
@@ -607,7 +635,7 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
             
             // Render all events initially
-            renderEvents(events);
+            updateDisplay();
         }
 
         // Initialize the app
@@ -616,15 +644,18 @@ TUE,10/02/2026,23/8/1447,HAFLA ALGHANNA UL ISLAMIYYA,"MAMBRUI",7:00 PM`;
 </body>
 <footer style="text-align: center; padding: 20px; background-color: #f9f9f9;">
   <p>
-    Note: To book a slot in next year's timetable, institution authorities are requested to contact the compilers not less than three weeks before 1st Rabi' al-Awwal, failing which the name of the institution will not appear in the timetable. Although every effort has been made to ensure accuracy of the above information, you are requested to reconfirm the dates with the respective institution for any changes that may have taken place subsequent to going to the press.
+    Note: To book a slot in next year's timetable, institution authorities are requested to contact the compilers  not less than three weeks before 1st Rabi' al-Awwal, failing which the name of the institution will not appear in the timetable. Although every effort has been made to ensure accuracy of the above information, you are requested to reconfirm the dates with the respective institution for any changes that may have taken place subsequent to going to the press.
   </p>
   <p>
-    <strong>Contact:</strong> <a href="#">0717394679</a> / 
+    <strong>Contact:</strong>
+    <a href="https://wa.me/254717394679" target="_blank" rel="noopener">
+      0717394679
+    </a> / 
     <strong>Email:</strong> <a href="mailto:biles786@gmail.com">biles786@gmail.com</a>
   </p>
   <p>
-    Contact Majma TV to book for your Live Mawlid coverage on television at affordable rate 
-    on </strong> <a href="#">0721397163</a>
+      Contact Majma TV to book your Live Mawlid coverage on television at an affordable rate on
+      <a href="tel:+254721397163">0721397163</a>.
   </p>
 </footer>
 </html>
